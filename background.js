@@ -8,6 +8,7 @@ let cachedPrefs = {}
 let firstAppTimestamp = null
 
 chrome.runtime.onInstalled.addListener((details) => {
+	handleOnStop()
 	fetchLocations()
 })
 
@@ -23,6 +24,17 @@ chrome.runtime.onMessage.addListener((data) => {
 		default:
 			break
 	}
+})
+
+chrome.notifications.onClicked.addListener(() => {
+	chrome.tabs.create({
+		url: 'https://ttp.cbp.dhs.gov/schedulerui/schedule-interview/location?lang=en&vo=true&returnUrl=ttp-external&service=up',
+	})
+})
+
+chrome.alarms.onAlarm.addListener(() => {
+	console.log('onAlarm scheduled code running...')
+	openSlotsJob()
 })
 
 const handleOnStop = () => {
@@ -58,11 +70,6 @@ const createAlarm = () => {
 const stopAlarm = () => {
 	chrome.alarms.clearAll()
 }
-
-chrome.alarms.onAlarm.addListener(() => {
-	console.log('onAlarm scheduled code running...')
-	openSlotsJob()
-})
 
 const openSlotsJob = () => {
 	fetchOpenSlots(cachedPrefs).then((data) => handleOpenSlots(data))
